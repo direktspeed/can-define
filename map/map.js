@@ -10,8 +10,11 @@ var canReflect = require("can-reflect");
 var canSymbol = require("can-symbol");
 var CIDSet = require("can-util/js/cid-set/cid-set");
 var CIDMap = require("can-util/js/cid-map/cid-map");
+var makeDebug = require('debug');
 
 var keysForDefinition = function(definitions) {
+	var debug = makeDebug('can-define::keysForDefinition')
+	debug(definitions)
 	var keys = [];
 	for(var prop in definitions) {
 		var definition = definitions[prop];
@@ -19,40 +22,51 @@ var keysForDefinition = function(definitions) {
 			keys.push(prop);
 		}
 	}
+	debug(keys);
 	return keys;
 };
 
 function assignDeep(source){
+	makeDebug('can-define::assignDeep')(source);
 	canBatch.start();
 	// TODO: we should probably just throw an error instead of cleaning
 	canReflect.assignDeepMap(this, source || {});
 	canBatch.stop();
 }
 function updateDeep(source){
+	makeDebug('can-define::updateDeep')(source);
 	canBatch.start();
 	// TODO: we should probably just throw an error instead of cleaning
 	canReflect.updateDeepMap(this, source || {});
 	canBatch.stop();
 }
 function setKeyValue(key, value) {
+	makeDebug('can-define::setKeyValue')(key,value);
 	var defined = defineHelpers.defineExpando(this, key, value);
 	if(!defined) {
 		this[key] = value;
 	}
 }
 function getKeyValue(key) {
+	var debug = makeDebug('can-define::getKeyValue')
 	var value = this[key];
+
 	if(value !== undefined || key in this || Object.isSealed(this)) {
+		debug(key,value)
 		return value;
 	} else {
 		Observation.add(this, key);
+		debug(key,this[key])
 		return this[key];
 	}
 }
+var mapDebug = makeDebug('can-define::DefineMap')
 var DefineMap = Construct.extend("DefineMap",{
 	setup: function(base){
-		var key,
+		var
+			key,
 			prototype = this.prototype;
+
 		if(DefineMap) {
 			// we have already created
 			define(prototype, prototype, base.prototype._define);
@@ -134,9 +148,14 @@ var DefineMap = Construct.extend("DefineMap",{
 	 *   @return {*} The value of that property.
 	 */
 	get: function(prop){
+		var rVal;
 		if(prop) {
-			return getKeyValue.call(this, prop);
+			rVal = getKeyValue.call(this, prop);
+			mapDebug('get', prop,rVal)
+			return rVal;
 		} else {
+			rVal = getKeyValue.call(this, prop);
+			mapDebug('get', prop,rVal)
 			return canReflect.unwrap(this, CIDMap);
 		}
 	},
@@ -169,8 +188,8 @@ var DefineMap = Construct.extend("DefineMap",{
 	 *   @return {can-define/map/map} This map instance, for chaining.
 	 */
 	set: function(prop, value){
+		mapDebug('set', prop,value)
 		if(typeof prop === "object") {
-
 			if(value === true) {
 				updateDeep.call(this, prop);
 			} else {
@@ -220,7 +239,7 @@ var DefineMap = Construct.extend("DefineMap",{
 	},
 
 	forEach: (function(){
-
+		mapDebug('forEach')
 		var forEach = function(list, cb, thisarg){
 			return canReflect.eachKey(list, cb, thisarg);
 		},
@@ -311,7 +330,7 @@ Object.defineProperty(DefineMap.prototype, "toObject", {
 	enumerable: false,
 	writable: true,
 	value: function(){
-		canLog.warn("Use DefineMap::get instead of DefineMap::toObject");
+		mapDebug("Use DefineMap::get instead of DefineMap::toObject");
 		return this.get();
 	}
 });

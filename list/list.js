@@ -37,6 +37,7 @@ var makeFilterCallback = function(props) {
 		return true;
 	};
 };
+var makeDebug = require('debug');
 /** @add can-define/list/list */
 var DefineList = Construct.extend("DefineList",
 	/** @static */
@@ -166,6 +167,7 @@ var DefineList = Construct.extend("DefineList",
 		 *   @return {*} The value at `prop`.
 		 */
 		get: function(index) {
+			makeDebug('can-define::list::get')('CALLED')
 			if (arguments.length) {
 				Observation.add(this, "" + index);
 				return this[index];
@@ -235,6 +237,7 @@ var DefineList = Construct.extend("DefineList",
 		 *   @return {can-define/list/list} The list instance.
 		 */
 		set: function(prop, value) {
+			makeDebug('can-define::list::set')(prop,value)
 			// if we are setting a single value
 			if (typeof prop !== "object") {
 				// We want change events to notify using integers if we're
@@ -1286,6 +1289,7 @@ assign(DefineList.prototype, {
 	 * ```
 	 */
 	sort: function(compareFunction) {
+		makeDebug('can-define::list::sort')('CALLED')
 		var removed = Array.prototype.slice.call(this);
 		Array.prototype.sort.call(this, compareFunction);
 		var added = Array.prototype.slice.call(this);

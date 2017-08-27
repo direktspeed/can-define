@@ -40,7 +40,8 @@
     "can-reflect": "^1.2.1",
     "can-symbol": "^1.0.0",
     "can-types": "^1.1.0",
-    "can-util": "^3.9.0"
+    "can-util": "^3.9.0",
+    "debug": "^3.0.1"
   },
   "devDependencies": {
     "jshint": "^2.9.1",
